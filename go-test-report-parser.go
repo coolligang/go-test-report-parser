@@ -7,7 +7,7 @@ import (
 	"github.com/xiaosongluo/go-test-report-parser/formatter"
 	_ "github.com/xiaosongluo/go-test-report-parser/formatter/junit"
 	_ "github.com/xiaosongluo/go-test-report-parser/formatter/markdownFunction"
-	"go-test-report-parser/files"
+	"github.com/coolligang/go-test-report-parser/files"
 	"os"
 	"strings"
 )
