@@ -80,7 +80,7 @@ func OutputError(report *parser.Report, path string) error {
 				header := getHeader(test)
 				startTime := getStartTime(test.Output)
 				info[header] = test.Output
-				if err := write(path+test.Name+"_"+startTime+".md", info); err != nil {
+				if err := write(path+"errors/"+test.Name+"_"+startTime+".md", info); err != nil {
 					return err
 				}
 			}
