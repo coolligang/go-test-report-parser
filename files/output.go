@@ -76,7 +76,7 @@ func OutputError(report *parser.Report, path string) error {
 	for _, pkg := range report.Packages {
 		info := make(map[string][]string)
 		for _, test := range pkg.Tests {
-			if test.Result == parser.FAIL && len(test.Output) > 0 {
+			if test.Result == parser.FAIL {
 				header := getHeader(test)
 				startTime := getStartTime(test.Output)
 				info[header] = test.Output
