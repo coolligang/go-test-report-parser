@@ -3,11 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/coolligang/go-test-report-parser/files"
 	"github.com/jstemmer/go-junit-report/parser"
 	"github.com/xiaosongluo/go-test-report-parser/formatter"
-	_ "github.com/xiaosongluo/go-test-report-parser/formatter/junit"
-	_ "github.com/xiaosongluo/go-test-report-parser/formatter/markdownFunction"
-	"github.com/coolligang/go-test-report-parser/files"
 	"os"
 	"strings"
 )
@@ -19,6 +17,7 @@ var (
 	setExitCode   bool
 	logPath       string
 	errSelect     bool
+	csvReport     bool
 )
 
 func init() {
@@ -28,6 +27,7 @@ func init() {
 	flag.BoolVar(&setExitCode, "set-exit-code", false, "set exit code to 1 if tests failed")
 	flag.StringVar(&logPath, "logs", "", "Absolute path of log")
 	flag.BoolVar(&errSelect, "err", false, "Output error logs to files separately")
+	flag.BoolVar(&csvReport, "csv", true, "Output CSV report")
 }
 
 //检查路径path路径是否以"/"结尾，如果不是则加上
@@ -72,19 +72,25 @@ func main() {
 			fmt.Printf("OutputError: %s", err)
 			os.Exit(1)
 		}
+	} else {
+		path, err := os.Getwd()
+		if err != nil {
+			fmt.Printf("Get current path error: %s", err)
+			os.Exit(1)
+		}
+		logPath = path + "/logs/"
 	}
 
 	if errSelect {
-		if logPath == "" {
-			path, err := os.Getwd()
-			if err != nil {
-				fmt.Printf("Get current path error: %s", err)
-				os.Exit(1)
-			}
-			logPath = path + "/logs/"
-		}
 		if err := files.OutputError(report, logPath); err != nil {
 			fmt.Printf("OutputError: %s", err)
+			os.Exit(1)
+		}
+	}
+
+	if csvReport {
+		if err:=files.OutputCSV(report, logPath);err!=nil{
+			fmt.Printf("OutputCSV: %s", err)
 			os.Exit(1)
 		}
 	}

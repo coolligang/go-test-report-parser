@@ -2,9 +2,12 @@ package files
 
 import (
 	"bufio"
+	"encoding/csv"
+	"github.com/jstemmer/go-junit-report/parser"
 	"os"
 	"path/filepath"
 	"strings"
+	"fmt"
 )
 
 //判断文件是否存在
@@ -71,4 +74,54 @@ func write(name string, info map[string][]string) error {
 	}
 	writer.Flush()
 	return nil
+}
+
+func writecsv(name string, pkg parser.Package) error {
+	csvFile := createFile(name)
+	defer csvFile.Close()
+	csvFile.WriteString("\xEF\xBB\xBF") // 写入UTF-8 BOM
+	writer := csv.NewWriter(csvFile)
+	// 写入文件头，及用例统计信息
+	writer.Write([]string{"测试模块", "总用例数", "通过", "失败", "未执行"})
+	pass, fail, skip := getTestCount(pkg)
+	writer.Write([]string{pkg.Name, fmt.Sprintf("%d", pass+fail+skip), fmt.Sprintf("%d", pass), fmt.Sprintf("%d", fail), fmt.Sprintf("%d", skip)})
+	writer.Write([]string{})
+	writer.Flush()
+
+	// 写入测试概要
+	writer.Write([]string{"全部测试用例结果概要"})
+	writer.Write([]string{"TESTNAME", "RESULT"})
+	for _, test := range pkg.Tests {
+		writer.Write([]string{test.Name, formatResult(test)})
+	}
+	writer.Write([]string{})
+	writer.Flush()
+
+	//写入测试用例错误详细
+	writer.Write([]string{"错误测试用例详细"})
+	writer.Write([]string{"TESTNAME", "RESULT", "OUTPUT"})
+	for _, errtest := range pkg.Tests {
+		if errtest.Result == parser.FAIL && len(errtest.Output) > 0 {
+			output := strings.Join(errtest.Output, "\n")
+			writer.Write([]string{errtest.Name, formatResult(errtest), output})
+		}
+	}
+	return nil
+}
+
+func getTestCount(pkg parser.Package) (int, int, int) {
+	var pass, fail, skip int
+	for _, test := range pkg.Tests {
+		if len(test.Output) > 0 {
+			switch test.Result {
+			case parser.PASS:
+				pass ++
+			case parser.FAIL:
+				fail ++
+			default:
+				skip ++
+			}
+		}
+	}
+	return pass, fail, skip
 }

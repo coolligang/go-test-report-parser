@@ -43,7 +43,7 @@ func getStartTime(output []string) string {
 	return strings.Replace(starttime, ":", "", -1)
 }
 
-//格式化文件名称，替换字符串中的 "/" "\" 为 "_"
+//格式化文件名称，替换字符串中的 "/" "\" 为 "-"
 func formatname(name string) string {
 	name = strings.Replace(name, "/", "-", -1)
 	return strings.Replace(name, "\\", "-", -1)
@@ -76,14 +76,25 @@ func OutputError(report *parser.Report, path string) error {
 	for _, pkg := range report.Packages {
 		info := make(map[string][]string)
 		for _, test := range pkg.Tests {
-			if test.Result == parser.FAIL {
+			if test.Result == parser.FAIL && len(test.Output) > 0 {
 				header := getHeader(test)
 				startTime := getStartTime(test.Output)
 				info[header] = test.Output
-				if err := write(path+test.Name+"_"+startTime+".md", info); err != nil {
+				if err := write(path+"errors/"+test.Name+"_"+startTime+".md", info); err != nil {
 					return err
 				}
 			}
+		}
+	}
+	return nil
+}
+
+//根据report输出csv报告
+func ReportCSV(report *parser.Report, path string) error{
+	for _, pkg := range report.Packages {
+		finename := formatname(pkg.Name)
+		if err := writecsv(path+finename+".csv", pkg); err != nil {
+			return err
 		}
 	}
 	return nil
