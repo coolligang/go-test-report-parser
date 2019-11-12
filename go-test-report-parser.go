@@ -89,8 +89,8 @@ func main() {
 	}
 
 	if csvReport {
-		if err:=files.OutputCSV(report, logPath);err!=nil{
-			fmt.Printf("OutputCSV: %s", err)
+		if err:=files.ReportCSV(report, logPath);err!=nil{
+			fmt.Printf("ReportCSV: %s", err)
 			os.Exit(1)
 		}
 	}
